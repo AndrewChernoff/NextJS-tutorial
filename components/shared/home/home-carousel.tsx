@@ -3,13 +3,20 @@
 import Autoplay from "embla-carousel-autoplay"
 import { Button } from "@/components/ui/button";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
-import data from "@/lib/data";
 import Image from "next/image";
 import Link from "next/link";
 
-export function HomeCarousel() {
+type ItemType = {
+      title: string,
+      buttonCaption: string,
+      image: string,
+      url: string,
+      isPublished: boolean,
+    }
 
-  const images = data.carousels.map(item => {
+export function HomeCarousel({items}: {items: ItemType[]}) {
+
+  const images = items.map(item => {
      return <CarouselItem key={item.title}>
         <Link href={item.url}>
               <div className='flex aspect-[16/6] items-center justify-center p-6 relative -m-1'>
