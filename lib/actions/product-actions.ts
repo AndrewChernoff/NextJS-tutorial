@@ -1,9 +1,10 @@
 'use server'
 
-import { PAGE_SIZE } from "../constants"
+import { FREE_SHIPPING_MIN_PRICE, PAGE_SIZE } from "../constants"
 import { connectToDatabase } from "../db"
 import Product, { IProduct } from "../db/models/product.model"
-
+import { OrderItem } from "../types"
+import { round2 } from "../utils"
 
 export const getAllCategories = async () => {
     await connectToDatabase()
@@ -88,5 +89,30 @@ export async function getRelatedProductsByCategory({
   return {
     data: JSON.parse(JSON.stringify(products)) as IProduct[],
     totalPages: Math.ceil(productsCount / limit),
+  }
+}
+
+export const calcDeliveryDateAndPrice = async ({
+  items,
+}: {
+  deliveryDateIndex?: number
+  items: OrderItem[]
+}) => {
+  const itemsPrice = round2(
+    items.reduce((acc, item) => acc + item.price * item.quantity, 0)
+  )
+
+  const shippingPrice = itemsPrice > FREE_SHIPPING_MIN_PRICE ? 0 : 5
+  const taxPrice = round2(itemsPrice * 0.15)
+  const totalPrice = round2(
+    itemsPrice +
+      (shippingPrice ? round2(shippingPrice) : 0) +
+      (taxPrice ? round2(taxPrice) : 0)
+  )
+  return {
+    itemsPrice,
+    shippingPrice,
+    taxPrice,
+    totalPrice,
   }
 }
